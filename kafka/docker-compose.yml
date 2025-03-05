@@ -1,0 +1,78 @@
+  version: '3'
+
+  services:
+    zookeeper:
+      image: confluentinc/cp-zookeeper:latest
+      hostname: zookeeper
+      network_mode: host
+      environment:
+        ZOOKEEPER_CLIENT_PORT: 2181
+        ZOOKEEPER_TICK_TIME: 2000
+        KAFKA_JMX_PORT: 9999
+        ZOOKEEPER_ADMIN_ENABLE_SERVER: "false"
+      volumes:
+        - /stor_a/zookeeper-data:/var/lib/zookeeper/data
+        - /stor_a/zookeeper-logs:/var/lib/zookeeper/log
+
+    kafka1:
+      image: confluentinc/cp-kafka:latest
+      hostname: kafka1
+      network_mode: host
+      depends_on:
+        - zookeeper
+      environment:
+        KAFKA_BROKER_ID: 1
+        KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9091
+        JMX_PORT: 9991
+        KAFKA_ZOOKEEPER_CONNECT: 127.0.0.1:2181
+        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka.lan:9091
+        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+        KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+        KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+        KAFKA_MIN_INSYNC_REPLICAS: 2
+        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+        KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      volumes:
+        - /stor_a/kafka1/kafka-data:/var/lib/kafka/data
+
+    kafka2:
+      image: confluentinc/cp-kafka:latest
+      hostname: kafka2
+      network_mode: host
+      depends_on:
+        - zookeeper
+      environment:
+        KAFKA_BROKER_ID: 2
+        JMX_PORT: 9992
+        KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+        KAFKA_ZOOKEEPER_CONNECT: 127.0.0.1:2181
+        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka.lan:9092
+        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+        KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+        KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+        KAFKA_MIN_INSYNC_REPLICAS: 2
+        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+        KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      volumes:
+        - /stor_a/kafka2/kafka-data:/var/lib/kafka/data
+
+    kafka3:
+      image: confluentinc/cp-kafka:latest
+      hostname: kafka3
+      network_mode: host
+      depends_on:
+        - zookeeper
+      environment:
+        KAFKA_BROKER_ID: 3
+        JMX_PORT: 9993
+        KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9093
+        KAFKA_ZOOKEEPER_CONNECT: 127.0.0.1:2181
+        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka.lan:9093
+        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+        KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+        KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+        KAFKA_MIN_INSYNC_REPLICAS: 2
+        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+        KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      volumes:
+        - /stor_a/kafka3/kafka-data:/var/lib/kafka/data

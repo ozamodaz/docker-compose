@@ -90,3 +90,9 @@ services:
     restart: unless-stopped
     network_mode: host
     privileged: true
+
+  kafka-exporter:
+    container_name: kafka-exporter
+    image: danielqsj/kafka-exporter 
+    command: ["--kafka.server=127.0.0.1:9091", "--kafka.server=127.0.0.1:9092", "--kafka.server=127.0.0.1:9093"]
+    network_mode: host
