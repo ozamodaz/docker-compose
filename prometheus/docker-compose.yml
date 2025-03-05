@@ -1,0 +1,92 @@
+services:
+
+# Server Part
+
+  grafana:
+    image: grafana/grafana
+    restart: unless-stopped
+    user: '1000'
+    volumes:
+      - /storage/db/grafana:/var/lib/grafana
+    ports:
+      - 127.0.0.1:3000:3000
+  prometheus-server:
+    container_name: prometheus-server
+    image: prom/prometheus
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - /storage/prometheus:/prometheus:rw # user nobody
+      - /opt/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--web.listen-address=127.0.0.1:9090"
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+      - "--log.level=error"
+      - "--log.format=json"
+      - "--storage.tsdb.retention.time=10d"
+
+  alertmanager:
+    image: prom/alertmanager
+    container_name: prometheus-alertmanager
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - /opt/prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+
+# Exporters:
+
+  prometheus-node-exporter:
+    container_name: prometheus-node-exporter
+    image: quay.io/prometheus/node-exporter:latest
+    restart: unless-stopped
+    network_mode: host
+    pid: host
+    volumes:
+      - "/:/host:ro,rslave"
+      - "/var/lib/prometheus/node-exporter:/var/lib/prometheus/node-exporter"
+    command:
+      - "--path.rootfs=/host"
+      - "--collector.textfile"
+      - "--collector.textfile.directory=/var/lib/prometheus/node-exporter"
+
+  prometheus-cadvisor:
+    container_name: prometheus-cadvisor
+    image: gcr.io/cadvisor/cadvisor
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - 127.0.0.1:8080:8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+
+  prometheus-process-exporter:
+    image: ncabatoff/process-exporter
+    container_name: process-exporter
+    ports:
+      - "127.0.0.1:9256:9256"
+    volumes:
+      - /proc:/host/proc:ro
+      - /opt/prometheus/process-exporter_filename.yml:/config/filename.yml
+    command:
+      - "--procfs"
+      - "/host/proc"
+      - "-config.path"
+      - "/config/filename.yml"
+    privileged: true
+    restart: unless-stopped
+
+  prometheus-smartctl:
+    container_name: prometheus-smartctl
+    image: matusnovak/prometheus-smartctl
+    restart: unless-stopped
+    network_mode: host
+    privileged: true

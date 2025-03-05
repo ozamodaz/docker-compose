@@ -1,0 +1,87 @@
+services:
+  es_node1:
+    container_name: es_node1
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.16.1
+    restart: unless-stopped
+    environment:
+      - node.name=es_node1
+      - cluster.name=es-cluster8
+      - discovery.seed_hosts=localhost:9301,localhost:9302
+      - cluster.initial_master_nodes=es_node1,es_node2,es_node3
+      - xpack.security.enabled=true
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.key=/usr/share/elasticsearch/config/certificates/node.key
+      - xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certificates/node.crt
+      - xpack.security.transport.ssl.certificate_authorities=/usr/share/elasticsearch/config/certificates/ca.crt
+      - ELASTIC_PASSWORD=eeFee8Heijei8Iedoo5iec1y
+      - ES_JAVA_OPTS=-Xms8g -Xmx8g -XX:+UseG1GC -XX:G1ReservePercent=25 -XX:InitiatingHeapOccupancyPercent=30
+      - http.port=9200
+      - transport.port=9300
+      #- reindex.remote.whitelist=reindex-es.lan:9200
+    network_mode: host
+    volumes:
+      - /stor_a/es8_node1:/usr/share/elasticsearch/data
+      - /opt/elsatic/certs:/usr/share/elasticsearch/config/certificates
+      #- /opt/elsatic/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+
+  es_node2:
+    container_name: es_node2
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.16.1
+    restart: unless-stopped
+    environment:
+      - node.name=es_node2
+      - cluster.name=es-cluster8
+      - discovery.seed_hosts=localhost:9300,localhost:9302
+      - cluster.initial_master_nodes=es_node1,es_node2,es_node3
+      - xpack.security.enabled=true
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.key=/usr/share/elasticsearch/config/certificates/node.key
+      - xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certificates/node.crt
+      - xpack.security.transport.ssl.certificate_authorities=/usr/share/elasticsearch/config/certificates/ca.crt
+      - ELASTIC_PASSWORD=eeFee8Heijei8Iedoo5iec1y
+      - ES_JAVA_OPTS=-Xms8g -Xmx8g -XX:+UseG1GC -XX:G1ReservePercent=25 -XX:InitiatingHeapOccupancyPercent=30
+      - http.port=9201
+      - transport.port=9301
+      #- reindex.remote.whitelist=reindex-es.lan:9200
+    network_mode: host
+    volumes:
+      - /stor_b/es8_node2:/usr/share/elasticsearch/data
+      - /opt/elsatic/certs:/usr/share/elasticsearch/config/certificates
+      #- /opt/elsatic/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+
+  es_node3:
+    container_name: es_node3
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.16.1
+    restart: unless-stopped
+    environment:
+      - node.name=es_node3
+      - cluster.name=es-cluster8
+      - discovery.seed_hosts=localhost:9300,localhost:9301
+      - cluster.initial_master_nodes=es_node1,es_node2,es_node3
+      - xpack.security.enabled=true
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.key=/usr/share/elasticsearch/config/certificates/node.key
+      - xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certificates/node.crt
+      - xpack.security.transport.ssl.certificate_authorities=/usr/share/elasticsearch/config/certificates/ca.crt
+      - ELASTIC_PASSWORD=eeFee8Heijei8Iedoo5iec1y
+      - ES_JAVA_OPTS=-Xms8g -Xmx8g -XX:+UseG1GC -XX:G1ReservePercent=25 -XX:InitiatingHeapOccupancyPercent=30
+      - http.port=9202
+      - transport.port=9302
+      #- reindex.remote.whitelist=reindex-es.lan:9200
+    network_mode: host
+    volumes:
+      - /stor_c/es8_node3:/usr/share/elasticsearch/data
+      - /opt/elsatic/certs:/usr/share/elasticsearch/config/certificates
+      #- /opt/elsatic/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.16.1
+    container_name: kibana
+    network_mode: host
+    environment:
+      #SERVER_NAME: kibana.example.org
+      ELASTICSEARCH_HOSTS: '["http://127.0.0.1:9200"]'
+      ELASTICSEARCH_SERVICEACCOUNTTOKEN: ''

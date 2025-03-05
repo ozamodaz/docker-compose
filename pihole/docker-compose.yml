@@ -1,0 +1,16 @@
+# More info at https://github.com/pi-hole/docker-pi-hole/ and https://docs.pi-hole.net/
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    network_mode: "host"
+    environment:
+      IPv6: false
+      TZ: 'Ukraine/Kyiv'
+      WEBPASSWORD: ''
+      WEB_PORT: 5353
+      DHCP_ACTIVE: false
+    volumes:
+      - './etc-pihole:/etc/pihole'
+      - './etc-dnsmasq.d:/etc/dnsmasq.d'
+    restart: unless-stopped

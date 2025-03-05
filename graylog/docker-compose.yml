@@ -1,0 +1,41 @@
+services:
+
+  elasticsearch:
+    container_name: graylog-elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.1
+    restart: unless-stopped
+    environment:
+      node.name: es01
+      cluster.name: graylog-es-cluster
+      discovery.type: 'single-node'
+      xpack.security.enabled: 'false'
+      ES_JAVA_OPTS: "-Xms2g -Xmx2g"
+    ports:
+      - 127.0.0.1:9200:9200
+    volumes:
+      - /storage/es7:/usr/share/elasticsearch/data
+
+  mongo:
+    container_name: graylog-mongo
+    image: mongo:7.0.15
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:27017:27017
+    volumes:
+      - /storage/mongo:/data
+
+  graylog:
+    container_name: graylog-server
+    image: "graylog/graylog:5.2"
+    restart: unless-stopped
+    environment:
+      GRAYLOG_HTTP_BIND_ADDRESS: 127.0.0.1:9000
+      GRAYLOG_ELASTICSEARCH_HOSTS: http://127.0.0.1:9200
+      GRAYLOG_MONGODB_URI: mongodb://127.0.0.1:27017/graylog
+      GRAYLOG_PASSWORD_SECRET: ''
+      GRAYLOG_ROOT_PASSWORD_SHA2: ''
+    entrypoint: /usr/bin/tini -- wait-for-it 127.0.0.1:9207 --  /docker-entrypoint.sh
+    network_mode: host
+    volumes:
+      - /storage/graylog:/usr/share/graylog/data
+      - /opt/elasticsearch/graylog-config:/usr/share/graylog/data/config

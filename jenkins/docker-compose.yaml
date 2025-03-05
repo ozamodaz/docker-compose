@@ -1,0 +1,26 @@
+services:
+
+  jenkins:
+    container_name: jenkins-server
+    image: jenkins/jenkins:lts-jdk21
+    #network_mode: host
+    restart: unless-stopped
+    environment:
+      EXPORTER_PORT: 9220
+    ports:
+      - 127.0.0.1:8888:8080
+    volumes:
+      - /opt/jenkins/data:/var/jenkins_home
+
+  jenkins-executor:
+    container_name: jenkins-executor
+    image: openjdk:21-bookworm
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      SECRET: ''
+      NAME: jenkins-executor-name
+    volumes:
+      - /opt/tools:/opt/tools:ro
+      - /opt/jenkins/artifacts:/opt/jenkins/artifacts
+    entrypoint: ["/bin/bash", "/opt/tools/jenkins-executor-entrypoint.sh"]
