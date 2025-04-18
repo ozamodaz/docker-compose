@@ -107,7 +107,6 @@ services:
   ecoflow-exporter:
     container_name: promethes-ecoflow-exporter
     image: ghcr.io/berezhinskiy/ecoflow_exporter:latest
-    #image: ecoflow_exporter:local2.0.1b3
     network_mode: host
     restart: unless-stopped
     logging:
