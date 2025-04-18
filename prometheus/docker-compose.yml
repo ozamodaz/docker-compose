@@ -10,6 +10,10 @@ services:
       - /storage/db/grafana:/var/lib/grafana
     ports:
       - 127.0.0.1:3000:3000
+    environment:
+      - GF_SERVER_ROOT_URL=https://grafana.example.com/
+      - GF_SERVER_DOMAIN=grafana.example.com
+
   prometheus-server:
     container_name: prometheus-server
     image: prom/prometheus
@@ -18,6 +22,7 @@ services:
     volumes:
       - /storage/prometheus:/prometheus:rw # user nobody
       - /opt/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - /opt/prometheus/alert-rules:/etc/prometheus/alert-rules
     command:
       - "--web.listen-address=127.0.0.1:9090"
       - "--config.file=/etc/prometheus/prometheus.yml"
@@ -46,7 +51,7 @@ services:
     pid: host
     volumes:
       - "/:/host:ro,rslave"
-      - "/var/lib/prometheus/node-exporter:/var/lib/prometheus/node-exporter"
+      - "/opt/prometheus/textfile-collector:/var/lib/prometheus/node-exporter"
     command:
       - "--path.rootfs=/host"
       - "--collector.textfile"
@@ -91,8 +96,28 @@ services:
     network_mode: host
     privileged: true
 
-  kafka-exporter:
-    container_name: kafka-exporter
+  prometheus-kafka-exporter:
+    container_name: prometheus-kafka-exporter
     image: danielqsj/kafka-exporter 
+    restart: unless-stopped
+    command: ["--kafka.server=kafka1:9092", "--kafka.server=kafka2:9092", "--kafka.server=kafka3:9092"]
+    ports:
+      - 127.0.0.1:9308:9308
+
+  ecoflow-exporter:
+    container_name: promethes-ecoflow-exporter
+    image: ghcr.io/berezhinskiy/ecoflow_exporter:latest
+    #image: ecoflow_exporter:local2.0.1b3
+    network_mode: host
+    restart: unless-stopped
+    logging:
+      driver: "none"
+    environment:
+      EXPORTER_PORT: 9220
+      DEVICE_SN: ABCD1234
+      DEVICE_NAME: my-ecoflow
+      ECOFLOW_USERNAME: example@gmail.com
+      ECOFLOW_PASSWORD: qwerty1234
+      LOG_LEVEL: ERROR
     command: ["--kafka.server=127.0.0.1:9091", "--kafka.server=127.0.0.1:9092", "--kafka.server=127.0.0.1:9093"]
     network_mode: host
